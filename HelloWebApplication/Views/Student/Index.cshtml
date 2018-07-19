@@ -1,0 +1,174 @@
+﻿@model HelloWebApplication.Models.StudentModels
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<script type="text/javascript" language="javascript">
+    $(document).ready(function () {
+        $("#lblStatus").text("").css('color', 'black');
+
+        $("#txtStudentId").keydown(function (e) {
+            ValidateNumber(e);
+        });
+
+        liGetDetails($('#txtStudentId'));
+    });
+
+
+    function GetStudentById() {
+        debugger;
+        var id = $("#txtStudentId").val();
+        if (isNaN(parseInt(id))) {
+            ClearFields();
+            $("#lblStatus").text("Please enter a valid Student ID").css('color', 'red');
+        }
+        else {
+            var Url = "/Student/Index?Id=" + parseInt(id);
+            $.ajax({
+                url: Url,
+                method: "post",
+                datatype: "json",
+                success: function (result) {
+
+                    if (result.flag) {
+                        var model = result.model;
+                        $("#txtName").val(model.Name);
+                        $("#txtGender").val(model.Gender);
+                        $("#txtTotalMarks").val(model.TotalMarks);
+                        $("#lblStatus").text("Data Retrived Successfully").css('color', 'green');
+                        $("#btnEdit").css('display', 'block');
+                        $("#btnGetData").css('display', 'none');
+                    }
+                    else {
+                        ClearFields();
+                        $("#lblStatus").text("Data Not Found!").css('color', 'red');
+                    }
+
+                },
+                error: function () {
+                    $("#lblStatus").text("").css('color', 'black');
+                    ClearFields();
+                    alert("error occured!!");
+                }
+            });
+        }
+    }
+
+    function SaveStudent() {
+        debugger;
+        var Url = "/Student/SaveStudent";
+        var Data = $("#frmStudent").serialize();
+        $.ajax({
+            url: Url,
+            method: "post",
+            datatype: "json",
+            data: Data,
+            success: function (result) {
+                $("#lblStatus").text("Data Saved Successfully").css('color', 'green');
+            },
+            error: function () {
+                $("#lblStatus").text("Something went wrong!").css('color', 'red');
+            }
+        });
+    }
+
+
+    function ClearFields() {
+        $("#txtStudentId").val('');
+        $("#txtName").val('');
+        $("#txtGender").val('');
+        $("#txtTotalMarks").val('');
+    }
+
+    function ValidateNumber(e) {
+        if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 110]) !== -1 ||
+            // Allow: Ctrl+A, Command+A
+            (e.keyCode === 65 && (e.ctrlKey === true || e.metaKey === true)) ||
+            // Allow: home, end, left, right, down, up
+            (e.keyCode >= 35 && e.keyCode <= 40)) {
+            // let it happen, don't do anything
+            return;
+        }
+        // Ensure that it is a number and stop the keypress
+        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+        }
+    }
+
+    function liGetDetails(event)
+    {
+        debugger;
+        var id = event.context.id;
+        $("#" + id).siblings().removeClass("active");
+        $("#" + id).addClass("active");
+        $("#txtName,#txtGender,#txtTotalMarks").attr('disabled', true).val('');
+        $("#txtStudentId").attr('disabled', false).val('');
+        $("#btnGetData").css('display', 'block');
+        $("#btnSaveStudent").css('display', 'none');
+
+    }
+
+    function liSaveStudent(event) {
+        debugger;
+        var id = event.context.id;
+        $("#" + id).siblings().removeClass("active");
+        $("#" + id).addClass("active");
+        $("#txtName,#txtGender,#txtTotalMarks").attr('disabled', false).val('');
+        $("#txtStudentId").attr('disabled', true).val('');
+        $("#btnGetData").css('display', 'none');
+        $("#btnSaveStudent").css('display', 'block');
+    }
+    
+</script>
+
+
+<div class="container">
+    <div>The Current Datetime is <b>@DateTime.Now</b></div>
+    <br /><br />
+    <ul class="nav nav-pills nav-justified">
+        <li class="active" onclick="liGetDetails($(this))" id="liGetDetails"><a href="#">Get Details</a></li>
+        <li onclick="liSaveStudent($(this))" id="liUpdate"><a href="#">Add / Update</a></li>
+    </ul>
+    <br /><br />
+
+    @using (Html.BeginForm(null,null, FormMethod.Post,new { @id="frmStudent"}))
+    {
+        <table class="table table-bordered table-condensed table-hover">
+            <tr>
+                <td>ID : </td>
+                <td>
+                    @Html.TextBoxFor(s => s.ID, new
+               {
+                   @class = "form-control",
+                   @id = "txtStudentId"
+               })
+                </td>
+            </tr>
+            <tr>
+                <td>Name : </td>
+                <td>@Html.TextBoxFor(s => s.Name, new { @class = "form-control", @id = "txtName" })</td>
+            </tr>
+            <tr>
+                <td>Gender : </td>
+                <td>@Html.TextBoxFor(s => s.Gender, new { @class = "form-control", @id = "txtGender" })</td>
+            </tr>
+            <tr>
+                <td>Total Marks : </td>
+                <td>@Html.TextBoxFor(s => s.TotalMarks, new { @class = "form-control", @id = "txtTotalMarks" })</td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="button" id="btnGetData" value="Get Data" class="btn btn-primary" onclick="GetStudentById()" />
+                    <input type="button" id="btnEdit" value="Edit" style="display:none;" class="btn btn-primary" onclick="GetStudentById()" />
+                    <input type="button" id="btnSaveStudent" value="Save Data" class="btn btn-primary" onclick="SaveStudent()" />
+                </td>
+                <td>
+                    <label id="lblStatus"></label>
+                </td>
+            </tr>
+        </table>
+
+    }
+
+</div>

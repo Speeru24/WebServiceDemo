@@ -1,0 +1,26 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+<div class="container" style="margin-top:50px">
+    @if (ViewBag.Message != null)
+    {
+        <div>@ViewBag.Message</div>
+    }
+    else
+    {
+        using (Html.BeginForm("Index", "WebService", FormMethod.Post, new { id = "frmMessage" }))
+        {
+            <table style="font-family:Arial">
+                <tr>
+                    <td>
+                        <input type="text" id="txtMessage" name="txtMessage"/>
+                        <input type="submit" value="Submit" />
+                    </td>
+                </tr>
+            </table>
+
+        }
+    }
+</div>
+
